@@ -1,6 +1,5 @@
 import flet as ft
 
-
 class Task(ft.Column):
     def __init__(self, task_name, task_status_change, task_delete):
         super().__init__()
@@ -25,9 +24,11 @@ class Task(ft.Column):
 
     def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
+        self.task_name = self.edit_name.value
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
+        self.task_status_change(self)
 
     def status_changed(self, e):
         self.completed = self.display_task.value
@@ -77,8 +78,9 @@ class Task(ft.Column):
         )
     
 class TodoApp(ft.Column):
-    def __init__(self):
+    def __init__(self, page):
         super().__init__()
+        self.page = page
         self.new_task = ft.TextField(
             hint_text="What needs to be done?", on_submit=self.add_clicked, expand=True
         )
@@ -94,21 +96,24 @@ class TodoApp(ft.Column):
         self.items_left = ft.Text("0 items left")
         self.width = 600
         self.controls = self._controls()
+        self.load_tasks()
 
     def add_clicked(self, e):
-        if self.new_task.value:
+        if self.new_task.value.strip():
             task = Task(self.new_task.value, self.task_status_change, self.task_delete)
             self.tasks.controls.append(task)
             self.new_task.value = ""
             self.new_task.focus()
             self.update()
-
+            self.save_tasks()
     def task_status_change(self, task):
         self.update()
+        self.save_tasks()
 
     def task_delete(self, task):
         self.tasks.controls.remove(task)
         self.update()
+        self.save_tasks()
 
     def tabs_changed(self, e):
         self.update()
@@ -117,7 +122,8 @@ class TodoApp(ft.Column):
         for task in self.tasks.controls[:]:
             if task.completed:
                 self.task_delete(task)
-
+        self.save_tasks() 
+        
     def before_update(self):
         status = self.filter.tabs[self.filter.selected_index].text
         count = 0
@@ -164,13 +170,32 @@ class TodoApp(ft.Column):
             ),
         ]
 
+    def save_tasks(self):
+        tasks_data = []
+        for task in self.tasks.controls:
+            tasks_data.append({
+                "name": task.task_name,
+                "completed": task.completed
+            })
+        self.page.client_storage.set("tasks", tasks_data)  
+
+    def load_tasks(self):
+        tasks_data = self.page.client_storage.get("tasks") or []
+        for task_data in tasks_data:
+            task = Task(task_data["name"], self.task_status_change, self.task_delete)
+            task.completed = task_data["completed"]
+            task.display_task.value = task_data["completed"]
+            self.tasks.controls.append(task)
+
 def main(page: ft.Page):
     page.title = "ToDo App"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = ft.ScrollMode.ADAPTIVE
 
-    # create app control and add it to the page
-    page.add(TodoApp())
+    todo_app = TodoApp(page)
+    page.add(todo_app)
+    page.update()
+    todo_app.new_task.focus()
 
 
 ft.app(main)
