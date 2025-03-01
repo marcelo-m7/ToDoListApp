@@ -142,39 +142,6 @@ class TodoApp(ft.Column):
                 count += 1
         self.items_left.value = f"{count} active item(s) left"
   
-    def _controls(self):
-        return [
-            ft.Row(
-                [ft.Text(value="Todos", theme_style=ft.TextThemeStyle.HEADLINE_MEDIUM)],
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-            ft.Row(
-                controls=[
-                    self.new_task,
-                    ft.FloatingActionButton(
-                        icon=ft.Icons.ADD, on_click=self.add_clicked
-                    ),
-                ],
-            ),
-            ft.Column(
-                spacing=25,
-                controls=[
-                    self.filter,
-                    self.tasks,
-                    ft.Row(
-                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                        controls=[
-                            self.items_left,
-                            ft.OutlinedButton(
-                                text="Clear completed", on_click=self.clear_clicked
-                            ),
-                        ],
-                    ),
-                ],
-            ),
-        ]
-
     def load_encryption_key(self):
         key = os.getenv("FERNET_KEY")
         
@@ -228,6 +195,39 @@ class TodoApp(ft.Column):
             except Exception as e:
                 print("Error decrypting tasks:", e)
                 self.page.client_storage.remove("tasks")
+
+    def _controls(self):
+        return [
+            ft.Row(
+                [ft.Text(value="Todos", theme_style=ft.TextThemeStyle.HEADLINE_MEDIUM)],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            ft.Row(
+                controls=[
+                    self.new_task,
+                    ft.FloatingActionButton(
+                        icon=ft.Icons.ADD, on_click=self.add_clicked
+                    ),
+                ],
+            ),
+            ft.Column(
+                spacing=25,
+                controls=[
+                    self.filter,
+                    self.tasks,
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+                            self.items_left,
+                            ft.OutlinedButton(
+                                text="Clear completed", on_click=self.clear_clicked
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ]
 
 def main(page: ft.Page):
     page.title = "ToDo App"
