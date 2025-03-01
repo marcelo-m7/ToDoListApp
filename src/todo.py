@@ -1,5 +1,8 @@
 import flet as ft
-from fernet import Fernet
+from cryptography.fernet import Fernet
+import os
+from dotenv import load_dotenv, set_key
+import json
 
 class Task(ft.Column):
     def __init__(self, task_name, task_status_change, task_delete):
@@ -80,6 +83,7 @@ class Task(ft.Column):
     
 class TodoApp(ft.Column):
     def __init__(self, page):
+        load_dotenv()
         super().__init__()
         self.page = page
         self.new_task = ft.TextField(
@@ -106,6 +110,7 @@ class TodoApp(ft.Column):
             self.new_task.focus()
             self.update()
             self.save_tasks()
+
     def task_status_change(self, task):
         self.update()
         self.save_tasks()
@@ -170,29 +175,59 @@ class TodoApp(ft.Column):
             ),
         ]
 
-    def save_tasks(self):
-        def encript(data):
-            key = Fernet.generate_key()
-            f = Fernet(key)
-            token = f.encrypt(data)
-            return f.decrypt(token)
+    def load_encryption_key(self):
+        key = os.getenv("FERNET_KEY")
+        
+        if not key:
+            print("FERNET_KEY not found in environment variables. Checking .env file...")
+            
+            if not os.path.exists(".env"):
+                print(".env file not found. Generating a new key...")
+                key = Fernet.generate_key().decode()
+                set_key(".env", "FERNET_KEY", key)
+                print(f"New FERNET_KEY generated and saved to .env: {key}")
+            else:
+                with open(".env", "r") as f:
+                    for line in f:
+                        if line.startswith("FERNET_KEY="):
+                            key = line.split("=", 1)[1].strip()
+                            break
+                
+                if not key:
+                    print("FERNET_KEY not found in .env file. Generating a new key...")
+                    key = Fernet.generate_key().decode()
+                    set_key(".env", "FERNET_KEY", key)
+                    print(f"New FERNET_KEY generated and saved to .env: {key}")
+        
+        # print("Final key:", key)
+        return key
 
+    def save_tasks(self):
         tasks_data = []
         for task in self.tasks.controls:
             tasks_data.append({
                 "name": task.task_name,
                 "completed": task.completed
             })
-        tasks_data_encripted = encript(str(tasks_data).encode("utf-8"))
-        self.page.client_storage.set("tasks", tasks_data_encripted)  
+        tasks_data_json = json.dumps(tasks_data).encode()
+        tasks_data_encrypted = Fernet(self.load_encryption_key()).encrypt(tasks_data_json)
+        self.page.client_storage.set("tasks", tasks_data_encrypted.decode())
 
     def load_tasks(self):
-        tasks_data = self.page.client_storage.get("tasks") or []
-        for task_data in tasks_data:
-            task = Task(task_data["name"], self.task_status_change, self.task_delete)
-            task.completed = task_data["completed"]
-            task.display_task.value = task_data["completed"]
-            self.tasks.controls.append(task)
+        tasks_data_encrypted = self.page.client_storage.get("tasks")
+        if tasks_data_encrypted:
+            try:
+                # print("Datas encrypted:", tasks_data_encrypted)
+                tasks_data_json = Fernet(self.load_encryption_key()).decrypt(tasks_data_encrypted.encode())
+                tasks_data = json.loads(tasks_data_json.decode())
+                for task_data in tasks_data:
+                    task = Task(task_data["name"], self.task_status_change, self.task_delete)
+                    task.completed = task_data["completed"]
+                    task.display_task.value = task_data["completed"]
+                    self.tasks.controls.append(task)
+            except Exception as e:
+                print("Error decrypting tasks:", e)
+                self.page.client_storage.remove("tasks")
 
 def main(page: ft.Page):
     page.title = "ToDo App"
@@ -203,6 +238,5 @@ def main(page: ft.Page):
     page.add(todo_app)
     page.update()
     todo_app.new_task.focus()
-
 
 ft.app(main)
