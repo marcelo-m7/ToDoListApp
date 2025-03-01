@@ -1,4 +1,5 @@
 import flet as ft
+from fernet import Fernet
 
 class Task(ft.Column):
     def __init__(self, task_name, task_status_change, task_delete):
@@ -85,7 +86,6 @@ class TodoApp(ft.Column):
             hint_text="What needs to be done?", on_submit=self.add_clicked, expand=True
         )
         self.tasks = ft.Column()
-
         self.filter = ft.Tabs(
             scrollable=False,
             selected_index=0,
@@ -171,13 +171,20 @@ class TodoApp(ft.Column):
         ]
 
     def save_tasks(self):
+        def encript(data):
+            key = Fernet.generate_key()
+            f = Fernet(key)
+            token = f.encrypt(data)
+            return f.decrypt(token)
+
         tasks_data = []
         for task in self.tasks.controls:
             tasks_data.append({
                 "name": task.task_name,
                 "completed": task.completed
             })
-        self.page.client_storage.set("tasks", tasks_data)  
+        tasks_data_encripted = encript(str(tasks_data).encode("utf-8"))
+        self.page.client_storage.set("tasks", tasks_data_encripted)  
 
     def load_tasks(self):
         tasks_data = self.page.client_storage.get("tasks") or []
