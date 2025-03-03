@@ -1,8 +1,10 @@
 import flet as ft
+from flet.auth.providers import GitHubOAuthProvider
 from cryptography.fernet import Fernet
 import os
 from dotenv import load_dotenv, set_key
 import json
+
 
 class Task(ft.Column):
     def __init__(self, task_name, task_status_change, task_delete):
@@ -148,7 +150,7 @@ class TodoApp(ft.Column):
         if not key:
             print("FERNET_KEY not found in environment variables. Checking .env file...")
             
-            if not os.path.exists(".env"):
+            if not os.path.exists("src/.env"):
                 print(".env file not found. Generating a new key...")
                 key = Fernet.generate_key().decode()
                 set_key(".env", "FERNET_KEY", key)
@@ -166,7 +168,6 @@ class TodoApp(ft.Column):
                     set_key(".env", "FERNET_KEY", key)
                     print(f"New FERNET_KEY generated and saved to .env: {key}")
         
-        # print("Final key:", key)
         return key
 
     def save_tasks(self):
@@ -184,7 +185,6 @@ class TodoApp(ft.Column):
         tasks_data_encrypted = self.page.client_storage.get("tasks")
         if tasks_data_encrypted:
             try:
-                # print("Datas encrypted:", tasks_data_encrypted)
                 tasks_data_json = Fernet(self.load_encryption_key()).decrypt(tasks_data_encrypted.encode())
                 tasks_data = json.loads(tasks_data_json.decode())
                 for task_data in tasks_data:
@@ -229,14 +229,76 @@ class TodoApp(ft.Column):
             ),
         ]
 
-def main(page: ft.Page):
+def load_env_file(env_file_path="src/.env"):
+    load_dotenv()
+    try:
+        with open(env_file_path, "r") as file:
+            for line in file:
+                line = line.strip()
+
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    key, value = line.split("=", 1)
+                    key = key.strip()
+                    value = value.strip()
+
+                    if (value.startswith('"') and value.endswith('"')) or (
+                        value.startswith("'") and value.endswith("'")
+                    ):
+                        value = value[1:-1]
+
+                    os.environ[key] = value
+                    print(f"Variável de ambiente definida: {key}={os.environ[key]}")
+    except FileNotFoundError:
+        print(f"Arquivo {env_file_path} não encontrado.")
+    except Exception as e:
+        print(f"Erro ao carregar o arquivo .env: {e}")
+
+
+def start_todo_app(page: ft.Page):
     page.title = "ToDo App"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = ft.ScrollMode.ADAPTIVE
-
+    page.update()
     todo_app = TodoApp(page)
     page.add(todo_app)
     page.update()
     todo_app.new_task.focus()
+    
+def main(page: ft.Page):
+    # page.client_storage.clear()    
+    provider = GitHubOAuthProvider(
+        client_id=os.getenv("GITHUB_CLIENT_ID"),
+        client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
+        redirect_url='http://localhost:8550/oauth_callback',
+    )
 
-ft.app(main)
+    def login_button_click(e):
+        page.login(provider, scope=["public_repo"])
+
+    def on_login(e: ft.LoginEvent):
+        if not e.error:
+            toggle_login_buttons()
+            start_todo_app(page)
+
+    def logout_button_click(e):
+        page.logout()
+
+    def on_logout(e):
+        toggle_login_buttons()
+
+    def toggle_login_buttons():
+        login_button.visible = page.auth is None
+        logout_button.visible = page.auth is not None
+        page.update()
+
+    login_button = ft.ElevatedButton("Login with GitHub", on_click=login_button_click)
+    logout_button = ft.ElevatedButton("Logout", on_click=logout_button_click)
+    toggle_login_buttons()
+    page.on_login = on_login
+    page.on_logout = on_logout
+    page.add(login_button, logout_button)
+
+load_env_file()
+ft.app(main, port=8550, view=ft.AppView.WEB_BROWSER)
