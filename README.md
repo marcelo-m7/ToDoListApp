@@ -1,81 +1,19 @@
-# Todolistapp app
+# ToDo List App
 
-## Run the app
+Este é um aplicativo de lista de tarefas (ToDo List) desenvolvido por Marcelo Santos (a79433) para diciplina de Computação Móvel. O aplicativo foi desenvolvido em Python com o uso da diblioteca Flet e está configurado para Deploy em Replit, com porta aberta 3000. A app permite autenticação via GitHub e armazena as tarefas de forma segura usando criptografia.
 
-### uv
+## Pré-requisitos
 
-Run as a desktop app:
+1. **Python**: Certifique-se de que o Python 3.8 ou superior está instalado.
+2. **GitHub OAuth App**: Crie um OAuth App no GitHub para obter as credenciais necessárias (`GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`).
 
-```
-uv run flet run
-```
+## Configuração
 
-Run as a web app:
+### 1. Criar o arquivo `.env`
 
-```
-uv run flet run --web
-```
+Crie um arquivo `.env` dentro da pasta `src/` com as seguintes variáveis:
 
-### Poetry
-
-Install dependencies from `pyproject.toml`:
-
-```
-poetry install
-```
-
-Run as a desktop app:
-
-```
-poetry run flet run
-```
-
-Run as a web app:
-
-```
-poetry run flet run --web
-```
-
-For more details on running the app, refer to the [Getting Started Guide](https://flet.dev/docs/getting-started/).
-
-## Build the app
-
-### Android
-
-```
-flet build apk -v
-```
-
-For more details on building and signing `.apk` or `.aab`, refer to the [Android Packaging Guide](https://flet.dev/docs/publish/android/).
-
-### iOS
-
-```
-flet build ipa -v
-```
-
-For more details on building and signing `.ipa`, refer to the [iOS Packaging Guide](https://flet.dev/docs/publish/ios/).
-
-### macOS
-
-```
-flet build macos -v
-```
-
-For more details on building macOS package, refer to the [macOS Packaging Guide](https://flet.dev/docs/publish/macos/).
-
-### Linux
-
-```
-flet build linux -v
-```
-
-For more details on building Linux package, refer to the [Linux Packaging Guide](https://flet.dev/docs/publish/linux/).
-
-### Windows
-
-```
-flet build windows -v
-```
-
-For more details on building Windows package, refer to the [Windows Packaging Guide](https://flet.dev/docs/publish/windows/).
+```plaintext
+GITHUB_CLIENT_ID="seu_client_id_aqui"
+GITHUB_CLIENT_SECRET="seu_client_secret_aqui"
+FERNET_KEY=""  # Opcional (será gerado automaticamente se não existir)

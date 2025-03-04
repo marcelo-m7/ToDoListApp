@@ -8,7 +8,7 @@ class AuthManager:
         self.provider = GitHubOAuthProvider(
             client_id=os.getenv("GITHUB_CLIENT_ID"),
             client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-            redirect_url='http://localhost:8080/oauth_callback',
+            redirect_url='https://9add73eb-1d78-4beb-99c1-ddcc8e613ebd-00-2c518dp4o8er8.riker.replit.dev:3000/oauth_callback',
         )
         self.login_button = ft.ElevatedButton("Login with GitHub", on_click=self.login_button_click)
         self.logout_button = ft.ElevatedButton("Logout", on_click=self.logout_button_click)
