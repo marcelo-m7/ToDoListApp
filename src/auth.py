@@ -8,7 +8,7 @@ class AuthManager:
         self.provider = GitHubOAuthProvider(
             client_id=os.getenv("GITHUB_CLIENT_ID"),
             client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-            redirect_url='http://localhost:8550/oauth_callback',
+            redirect_url='http://localhost:8080/oauth_callback',
         )
         self.login_button = ft.ElevatedButton("Login with GitHub", on_click=self.login_button_click)
         self.logout_button = ft.ElevatedButton("Logout", on_click=self.logout_button_click)
@@ -22,11 +22,11 @@ class AuthManager:
         """Inicia o processo de logout."""
         self.page.logout()
 
-    # def on_login(self, e: ft.LoginEvent):
-    #     """Callback chamado após o login."""
-    #     if not e.error:
-    #         self.toggle_login_buttons()
-    #         self.start_app_func()
+    def on_login(self, e: ft.LoginEvent):
+        """Callback chamado após o login."""
+        if not e.error:
+            self.toggle_login_buttons()
+            self.start_app_func()
 
     def on_logout(self, e):
         """Callback chamado após o logout."""
