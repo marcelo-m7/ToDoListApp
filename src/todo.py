@@ -97,6 +97,7 @@ class TodoApp(ft.Column):
         self.controls = self._controls()
         self.load_tasks()
 
+
     def add_clicked(self, e):
         if self.new_task.value.strip():
             task = Task(self.new_task.value, self.task_status_change, self.task_delete)

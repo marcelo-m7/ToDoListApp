@@ -3,7 +3,7 @@ import flet as ft
 from flet.auth.providers import GitHubOAuthProvider
 
 class AuthManager:
-    def __init__(self, page):
+    def __init__(self, page: ft.Page):
         self.page = page
         self.provider = GitHubOAuthProvider(
             client_id=os.getenv("GITHUB_CLIENT_ID"),
@@ -22,11 +22,11 @@ class AuthManager:
         """Inicia o processo de logout."""
         self.page.logout()
 
-    def on_login(self, e: ft.LoginEvent):
-        """Callback chamado após o login."""
-        if not e.error:
-            self.toggle_login_buttons()
-            self.page.dispatch("start_todo_app")
+    # def on_login(self, e: ft.LoginEvent):
+    #     """Callback chamado após o login."""
+    #     if not e.error:
+    #         self.toggle_login_buttons()
+    #         self.start_app_func()
 
     def on_logout(self, e):
         """Callback chamado após o logout."""
