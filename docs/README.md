@@ -17,3 +17,20 @@ Crie um arquivo `.env` dentro da pasta `src/` com as seguintes variáveis:
 GITHUB_CLIENT_ID="seu_client_id_aqui"
 GITHUB_CLIENT_SECRET="seu_client_secret_aqui"
 FERNET_KEY=""  # Opcional (será gerado automaticamente se não existir)
+```
+
+### 2. Configurar host (`src/auth.py` e `src/main.py`)
+
+ Caso se pretenda fazer deploy em Replit, é nessário alterar a URL e porta palas fornecidas pelo servidor.
+ `src/auth.py.`:
+```python
+redirect_url='http://localhost:3000/oauth_callback',
+# redirect_url='https://9add73eb-1d78-4beb-99c1-ddcc8e613ebd-00-2c518dp4o8er8.riker.replit.dev:3000/oauth_callback', # Replit
+
+```
+
+`src/main.py`:
+```python
+ft.app(main, port=8550, view=ft.AppView.WEB_BROWSER, host="localhost", assets_dir="src/assets")
+# ft.app(main, port=3000, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", assets_dir="src/assets") # Replit
+```
