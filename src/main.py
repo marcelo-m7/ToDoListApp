@@ -36,5 +36,5 @@ def main(page: ft.Page):
     page.add(auth_manager.login_button, auth_manager.logout_button)
 
 # Inicia o aplicativo Flet
-ft.app(main, port=8550, view=ft.AppView.WEB_BROWSER, host="localhost", assets_dir="src/assets")
-# ft.app(main, port=3000, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", assets_dir="src/assets") # Replit
+ft.app(main, port=8550, view=ft.AppView.WEB_BROWSER, host="localhost", assets_dir="assets")
+# ft.app(main, port=3000, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", assets_dir="assets") # Replit
